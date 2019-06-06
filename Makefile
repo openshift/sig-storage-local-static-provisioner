@@ -90,6 +90,10 @@ test: provisioner
 	docker run --privileged -v $(PWD)/deployment/docker/test.sh:/test.sh --entrypoint bash $(IMAGE) /test.sh
 .PHONY: test
 
+no-container-test:
+	go test ./cmd/... ./pkg/...
+	bash $(PWD)/deployment/docker/test.sh /scripts
+
 clean:
 	rm -rf _output
 .PHONY: clean
