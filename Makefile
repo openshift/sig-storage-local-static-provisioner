@@ -92,7 +92,8 @@ test: provisioner
 
 no-container-test:
 	go test ./cmd/... ./pkg/...
-	bash $(PWD)/deployment/docker/test.sh $(PWD)/deployment/docker/scripts
+	# Remove bash tests until we figure out how to run them via ci-operator
+	# bash $(PWD)/deployment/docker/test.sh $(PWD)/deployment/docker/scripts
 .PHONY: no-container-test
 
 clean:
