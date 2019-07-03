@@ -29,9 +29,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
-	"k8s.io/api/core/v1"
-	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
-	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -466,39 +466,39 @@ func createServiceAccount(config *localTestConfig) {
 // service account: systemRoleNode and systemRolePVProvisioner. These are required for
 // provisioner to get node information and create persistent volumes.
 func createProvisionerClusterRoleBinding(config *localTestConfig) {
-	subjects := []rbacv1beta1.Subject{
+	subjects := []rbacv1.Subject{
 		{
-			Kind:      rbacv1beta1.ServiceAccountKind,
+			Kind:      rbacv1.ServiceAccountKind,
 			Name:      testServiceAccount,
 			Namespace: config.ns,
 		},
 	}
 
-	pvBinding := rbacv1beta1.ClusterRoleBinding{
+	pvBinding := rbacv1.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "rbac.authorization.k8s.io/v1beta1",
+			APIVersion: rbacv1.SchemeGroupVersion.String(),
 			Kind:       "ClusterRoleBinding",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: pvBindingName,
 		},
-		RoleRef: rbacv1beta1.RoleRef{
-			APIGroup: "rbac.authorization.k8s.io",
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: rbacv1.GroupName,
 			Kind:     "ClusterRole",
 			Name:     systemRolePVProvisioner,
 		},
 		Subjects: subjects,
 	}
-	nodeBinding := rbacv1beta1.ClusterRoleBinding{
+	nodeBinding := rbacv1.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "rbac.authorization.k8s.io/v1beta1",
+			APIVersion: rbacv1.SchemeGroupVersion.String(),
 			Kind:       "ClusterRoleBinding",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: nodeBindingName,
 		},
-		RoleRef: rbacv1beta1.RoleRef{
-			APIGroup: "rbac.authorization.k8s.io",
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: rbacv1.GroupName,
 			Kind:     "ClusterRole",
 			Name:     systemRoleNode,
 		},
@@ -506,18 +506,18 @@ func createProvisionerClusterRoleBinding(config *localTestConfig) {
 	}
 
 	deleteClusterRoleBinding(config)
-	_, err := config.client.RbacV1beta1().ClusterRoleBindings().Create(&pvBinding)
+	_, err := config.client.RbacV1().ClusterRoleBindings().Create(&pvBinding)
 	Expect(err).NotTo(HaveOccurred())
-	_, err = config.client.RbacV1beta1().ClusterRoleBindings().Create(&nodeBinding)
+	_, err = config.client.RbacV1().ClusterRoleBindings().Create(&nodeBinding)
 	Expect(err).NotTo(HaveOccurred())
 
 	// job role and rolebinding
-	jobRole := rbacv1beta1.Role{
+	jobRole := rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "local-storage-provisioner-jobs-role",
 			Namespace: config.ns,
 		},
-		Rules: []rbacv1beta1.PolicyRule{
+		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"batch"},
 				Resources: []string{"jobs"},
@@ -525,29 +525,29 @@ func createProvisionerClusterRoleBinding(config *localTestConfig) {
 			},
 		},
 	}
-	jobRoleBinding := rbacv1beta1.RoleBinding{
+	jobRoleBinding := rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "local-storage-provisioner-jobs-rolebinding",
 			Namespace: config.ns,
 		},
 		Subjects: subjects,
-		RoleRef: rbacv1beta1.RoleRef{
-			APIGroup: "rbac.authorization.k8s.io",
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: rbacv1.GroupName,
 			Kind:     "Role",
 			Name:     jobRole.Name,
 		},
 	}
-	_, err = config.client.RbacV1beta1().Roles(config.ns).Create(&jobRole)
+	_, err = config.client.RbacV1().Roles(config.ns).Create(&jobRole)
 	Expect(err).NotTo(HaveOccurred())
-	_, err = config.client.RbacV1beta1().RoleBindings(config.ns).Create(&jobRoleBinding)
+	_, err = config.client.RbacV1().RoleBindings(config.ns).Create(&jobRoleBinding)
 	Expect(err).NotTo(HaveOccurred())
 }
 
 func deleteClusterRoleBinding(config *localTestConfig) {
 	// These role bindings are created in provisioner; we just ensure it's
 	// deleted and do not panic on error.
-	config.client.RbacV1beta1().ClusterRoleBindings().Delete(nodeBindingName, metav1.NewDeleteOptions(0))
-	config.client.RbacV1beta1().ClusterRoleBindings().Delete(pvBindingName, metav1.NewDeleteOptions(0))
+	config.client.RbacV1().ClusterRoleBindings().Delete(nodeBindingName, metav1.NewDeleteOptions(0))
+	config.client.RbacV1().ClusterRoleBindings().Delete(pvBindingName, metav1.NewDeleteOptions(0))
 }
 
 func createAndSetupLoopDevice(config *localTestConfig, file string, node *v1.Node, size int) {
@@ -689,15 +689,15 @@ func createProvisionerDaemonset(config *localTestConfig) {
 	provisionerPrivileged := true
 	mountProp := v1.MountPropagationHostToContainer
 
-	provisioner := &extensionsv1beta1.DaemonSet{
+	provisioner := &appsv1.DaemonSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "DaemonSet",
-			APIVersion: "extensions/v1beta1",
+			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: daemonSetName,
 		},
-		Spec: extensionsv1beta1.DaemonSetSpec{
+		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"app": daemonSetName},
 			},
@@ -777,10 +777,10 @@ func createProvisionerDaemonset(config *localTestConfig) {
 			},
 		},
 	}
-	_, err := config.client.ExtensionsV1beta1().DaemonSets(config.ns).Create(provisioner)
+	_, err := config.client.AppsV1().DaemonSets(config.ns).Create(provisioner)
 	Expect(err).NotTo(HaveOccurred())
 
-	kind := schema.GroupKind{Group: "extensions", Kind: "DaemonSet"}
+	kind := schema.GroupKind{Group: appsv1.GroupName, Kind: "DaemonSet"}
 	framework.WaitForControlledPodsRunning(config.client, config.ns, daemonSetName, kind)
 }
 
@@ -895,7 +895,7 @@ func (c *localTestConfig) isNodeInList(name string) bool {
 }
 
 func deleteProvisionerDaemonset(config *localTestConfig) {
-	ds, err := config.client.ExtensionsV1beta1().DaemonSets(config.ns).Get(daemonSetName, metav1.GetOptions{})
+	ds, err := config.client.AppsV1().DaemonSets(config.ns).Get(daemonSetName, metav1.GetOptions{})
 	if ds == nil {
 		return
 	}
@@ -924,7 +924,7 @@ func deleteProvisionerDaemonset(config *localTestConfig) {
 		savePodLogs(config.client, framework.TestContext.ReportDir, podsToSave)
 	}
 
-	err = config.client.ExtensionsV1beta1().DaemonSets(config.ns).Delete(daemonSetName, nil)
+	err = config.client.AppsV1().DaemonSets(config.ns).Delete(daemonSetName, nil)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
