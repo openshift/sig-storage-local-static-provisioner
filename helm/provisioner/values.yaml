@@ -12,12 +12,17 @@ common:
   namespace: default
   #
   # Defines whether to create provisioner namespace
-  # 
+  #
   createNamespace: false
+  #
   # Beta PV.NodeAffinity field is used by default. If running against pre-1.10
   # k8s version, the `useAlphaAPI` flag must be enabled in the configMap.
   #
   useAlphaAPI: false
+  #
+  # Indicates if PVs should be dependents of the owner Node.
+  #
+  setPVOwnerRef: false
   #
   # Provisioner clean volumes in process by default. If set to true, provisioner
   # will use Jobs to clean.
@@ -76,9 +81,11 @@ classes:
   # Uncomment to create storage class object and configure it.
   # storageClass:
     # reclaimPolicy: Delete # Available reclaim policies: Delete/Retain, defaults: Delete.
+    # isDefaultClass: true # set as default class
+
 #
 # Configure DaemonSet for provisioner.
-# 
+#
 daemonset:
   #
   # Defines the name of a Provisioner
@@ -87,7 +94,7 @@ daemonset:
   #
   # Defines Provisioner's image name including container registry.
   #
-  image: quay.io/external_storage/local-volume-provisioner:v2.3.2
+  image: quay.io/external_storage/local-volume-provisioner:v2.3.4
   #
   # Defines Image download policy, see kubernetes documentation for available values.
   #
