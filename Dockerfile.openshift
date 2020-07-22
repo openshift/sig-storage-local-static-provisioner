@@ -1,5 +1,4 @@
-FROM registry.svc.ci.openshift.org/openshift/release:golang-1.11 AS builder
-ARG GOVERSION=1.11.1
+FROM registry.svc.ci.openshift.org/openshift/release:golang-1.13 AS builder
 WORKDIR /go/src/sigs.k8s.io/sig-storage-local-static-provisioner
 COPY . .
 RUN CGO_ENABLED=0 GOOS=${OS} GOARCH=${ARCH} go build -a -ldflags '-extldflags "-static"' -o _output/cmd/local-volume-provisioner ./cmd/local-volume-provisioner
