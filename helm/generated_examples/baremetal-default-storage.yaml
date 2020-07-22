@@ -14,10 +14,7 @@ data:
     local-storage:
        hostDir: /mnt/disks
        mountDir: /mnt/disks
-       blockCleanerCommand:
-         - "/scripts/shred.sh"
-         - "2"
-       volumeMode: Block
+       volumeMode: Filesystem
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -39,8 +36,6 @@ spec:
         app: local-volume-provisioner
     spec:
       serviceAccountName: local-storage-admin
-      nodeSelector:
-        localVolume: present
       containers:
         - image: "quay.io/external_storage/local-volume-provisioner:v2.3.4"
           name: provisioner
@@ -81,6 +76,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: local-storage
+  annotations:  
+    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     heritage: "Tiller"
     release: "RELEASE-NAME"

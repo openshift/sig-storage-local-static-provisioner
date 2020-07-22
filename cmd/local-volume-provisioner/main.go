@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/metrics"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/metrics/collectors"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -48,7 +48,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	klog.InitFlags(nil)
-	flag.StringVar(&optListenAddress, "listen-address", ":8080", "address on which to expose metrics")
+	flag.StringVar(&optListenAddress, "listen-address", ":8080", "address on which to expose metrics and readiness status")
 	flag.StringVar(&optMetricsPath, "metrics-path", "/metrics", "path under which to expose metrics")
 	flag.Parse()
 	flag.Set("logtostderr", "true")
@@ -95,10 +95,12 @@ func main() {
 		Namespace:         namespace,
 		JobContainerImage: jobImage,
 		LabelsForPV:       provisionerConfig.LabelsForPV,
+		SetPVOwnerRef:     provisionerConfig.SetPVOwnerRef,
 	})
 
 	klog.Infof("Starting metrics server at %s\n", optListenAddress)
 	prometheus.MustRegister([]prometheus.Collector{
+		metrics.PersistentVolumeCapacityBytes,
 		metrics.PersistentVolumeDiscoveryTotal,
 		metrics.PersistentVolumeDiscoveryDurationSeconds,
 		metrics.PersistentVolumeDeleteTotal,

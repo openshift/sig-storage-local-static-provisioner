@@ -17,6 +17,7 @@ limitations under the License.
 package e2e
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path"
@@ -268,7 +269,7 @@ var _ = utils.SIGDescribe("PersistentVolumes-local ", func() {
 			Expect(err).NotTo(HaveOccurred(),
 				"Error getting logs from pod %s in namespace %s", provisionerPodName, config.ns)
 
-			expectedLogMessage := "Path \"/mnt/local-storage/notbindmount\" is not an actual mountpoint"
+			expectedLogMessage := "path \"/mnt/local-storage/notbindmount\" is not an actual mountpoint"
 			Expect(strings.Contains(logs, expectedLogMessage)).To(BeTrue())
 		})
 	})
@@ -990,6 +991,19 @@ func deletePodAndPVCs(config *localTestConfig, pod *v1.Pod) error {
 		}
 	}
 	return nil
+}
+
+func handleFlags() {
+	// Register framework flags, then handle flags and Viper config.
+	framework.RegisterCommonFlags()
+	framework.RegisterClusterFlags()
+	flag.Parse()
+}
+
+func TestMain(m *testing.M) {
+	handleFlags()
+	framework.AfterReadingAllFlags(&framework.TestContext)
+	os.Exit(m.Run())
 }
 
 func TestE2E(t *testing.T) {
