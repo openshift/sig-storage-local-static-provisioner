@@ -600,7 +600,7 @@
   revision = "b4a75ba826a64a70990f11a225237acd6ef35c9f"
 
 [[projects]]
-  digest = "1:2c4e3b27329379d7b5f889038b48086140ea60708fb92e4b19d6a775926ea30b"
+  digest = "1:470e183686d33b8ed30c339b538e4330d82d07cd4b8ff32383a2124c0f8ccbc3"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -617,6 +617,8 @@
     "encoding/unicode",
     "internal/colltab",
     "internal/gen",
+    "internal/language",
+    "internal/language/compact",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
@@ -632,8 +634,8 @@
     "width",
   ]
   pruneopts = "NUT"
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
+  revision = "23ae387dee1f90d29a23c0e87ee0b46038fbed0e"
+  version = "v0.3.3"
 
 [[projects]]
   branch = "master"
