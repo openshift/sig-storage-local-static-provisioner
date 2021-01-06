@@ -1,4 +1,6 @@
-# sig-storage-local-static-provisioner
+# Local Persistence Volume Static Provisioner
+
+[![Coverage Status](https://coveralls.io/repos/github/kubernetes-sigs/sig-storage-local-static-provisioner/badge.svg?branch=master)](https://coveralls.io/github/kubernetes-sigs/sig-storage-local-static-provisioner?branch=master)
 
 The local volume static provisioner manages the PersistentVolume lifecycle for
 pre-allocated disks by detecting and creating PVs for each local disk on the
@@ -93,7 +95,7 @@ Recommended provisioner versions with Kubernetes versions
 
 | Provisioner version | K8s version   | Reason                    |
 | ------------------- | ------------- | ------------------------- |
-| [2.3.4][4]          | 1.12+         | fs on block support       |
+| [2.4.0][4]          | 1.12+         | fs on block support       |
 | [2.2.0][3]          | 1.10          | Beta API default, block   |
 | [2.0.0][2]          | 1.8, 1.9      | Mount propagation         |
 | [1.0.1][1]          | 1.7           |                           |
@@ -101,7 +103,7 @@ Recommended provisioner versions with Kubernetes versions
 [1]: https://github.com/kubernetes-incubator/external-storage/tree/local-volume-provisioner-v1.0.1/local-volume
 [2]: https://github.com/kubernetes-incubator/external-storage/tree/local-volume-provisioner-v2.0.0/local-volume
 [3]: https://github.com/kubernetes-incubator/external-storage/tree/local-volume-provisioner-v2.2.0/local-volume
-[4]: https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner/tree/v2.3.4
+[4]: https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner/tree/v2.4.0
 
 ## K8s Feature Status
 
