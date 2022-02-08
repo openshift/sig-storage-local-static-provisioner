@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"math/rand"
@@ -26,7 +27,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/common"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/controller"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/deleter"
@@ -119,7 +120,7 @@ func getNode(client *kubernetes.Clientset, name string) *v1.Node {
 	var retries int
 
 	for {
-		node, err := client.CoreV1().Nodes().Get(name, metav1.GetOptions{})
+		node, err := client.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
 		if err == nil {
 			return node
 		}
