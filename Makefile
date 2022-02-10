@@ -82,7 +82,7 @@ test: provisioner
 .PHONY: test
 
 no-container-test:
-	go test ./cmd/... ./pkg/...
+	GO111MODULE=auto go test ./cmd/... ./pkg/...
 	# Remove bash tests until we figure out how to run them via ci-operator
 	# bash $(PWD)/deployment/docker/test.sh $(PWD)/deployment/docker/scripts
 .PHONY: no-container-test
