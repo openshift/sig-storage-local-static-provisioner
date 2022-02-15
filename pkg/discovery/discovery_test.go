@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/klog"
-	esUtil "sigs.k8s.io/sig-storage-lib-external-provisioner/util"
+	"k8s.io/klog/v2"
+	esUtil "sigs.k8s.io/sig-storage-lib-external-provisioner/v6/util"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/cache"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/common"
 	"sigs.k8s.io/sig-storage-local-static-provisioner/pkg/deleter"
@@ -281,6 +281,39 @@ func TestDiscoverVolumes_BadVolume(t *testing.T) {
 	verifyPVsNotInCache(t, test)
 }
 
+func TestDiscoverVolumes_PathAlreadyActive(t *testing.T) {
+	vols := map[string][]*util.FakeDirEntry{
+		"dir1": {
+			{Name: "mount1", Hash: 0xaaaafef5, VolumeType: util.FakeEntryFile, Capacity: 100 * 1024},
+		},
+	}
+
+	// preload the cache with an existing volume using the path testHostDir + "/dir1/mount1"
+	localPVConfig := &common.LocalPVConfig{
+		Name:            "existing-pv",
+		HostPath:        testHostDir + "/dir1/mount1",
+		StorageClass:    "existingclass",
+		ReclaimPolicy:   reclaimPolicyDelete,
+		ProvisionerName: testProvisionerName,
+		VolumeMode:      "Filesystem",
+	}
+	lvSpec := common.CreateLocalPVSpec(localPVConfig)
+	cache := cache.NewVolumeCache()
+	cache.AddPV(lvSpec)
+
+	test := &testConfig{
+		dirLayout:       vols,
+		expectedVolumes: map[string][]*util.FakeDirEntry{},
+		cache:           cache,
+	}
+	d := testSetup(t, test, false, false)
+
+	d.DiscoverLocalVolumes()
+
+	verifyCreatedPVs(t, test)
+	verifyPVsNotInCache(t, test)
+}
+
 func TestDiscoverVolumes_CleaningInProgress(t *testing.T) {
 	vols := map[string][]*util.FakeDirEntry{
 		"dir1": {
@@ -350,7 +383,9 @@ func TestDiscoverVolumes_InvalidMode(t *testing.T) {
 }
 
 func testSetup(t *testing.T, test *testConfig, useAlphaAPI, setPVOwnerRef bool) *Discoverer {
-	test.cache = cache.NewVolumeCache()
+	if test.cache == nil {
+		test.cache = cache.NewVolumeCache()
+	}
 	test.volUtil = util.NewFakeVolumeUtil(false /*deleteShouldFail*/, map[string][]*util.FakeDirEntry{})
 	test.volUtil.AddNewDirEntries(testMountDir, test.dirLayout)
 	test.cleanupTracker = &deleter.CleanupStatusTracker{ProcTable: deleter.NewProcTable(),
