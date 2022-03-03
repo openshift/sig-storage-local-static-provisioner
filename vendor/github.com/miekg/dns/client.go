@@ -320,12 +320,16 @@ func (co *Conn) Read(p []byte) (n int, err error) {
 			return 0, err
 		}
 		if l > len(p) {
-			return l, io.ErrShortBuffer
+			return int(l), io.ErrShortBuffer
 		}
 		return tcpRead(r, p[:l])
 	}
 	// UDP connection
-	return co.Conn.Read(p)
+	n, err = co.Conn.Read(p)
+	if err != nil {
+		return n, err
+	}
+	return n, err
 }
 
 // WriteMsg sends a message through the connection co.
@@ -347,8 +351,10 @@ func (co *Conn) WriteMsg(m *Msg) (err error) {
 	if err != nil {
 		return err
 	}
-	_, err = co.Write(out)
-	return err
+	if _, err = co.Write(out); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Write implements the net.Conn Write method.
@@ -370,7 +376,8 @@ func (co *Conn) Write(p []byte) (n int, err error) {
 		n, err := io.Copy(w, bytes.NewReader(p))
 		return int(n), err
 	}
-	return co.Conn.Write(p)
+	n, err = co.Conn.Write(p)
+	return n, err
 }
 
 // Return the appropriate timeout for a specific request
@@ -437,7 +444,11 @@ func ExchangeConn(c net.Conn, m *Msg) (r *Msg, err error) {
 // DialTimeout acts like Dial but takes a timeout.
 func DialTimeout(network, address string, timeout time.Duration) (conn *Conn, err error) {
 	client := Client{Net: network, Dialer: &net.Dialer{Timeout: timeout}}
-	return client.Dial(address)
+	conn, err = client.Dial(address)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 // DialWithTLS connects to the address on the named network with TLS.
@@ -446,7 +457,12 @@ func DialWithTLS(network, address string, tlsConfig *tls.Config) (conn *Conn, er
 		network += "-tls"
 	}
 	client := Client{Net: network, TLSConfig: tlsConfig}
-	return client.Dial(address)
+	conn, err = client.Dial(address)
+
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 // DialTimeoutWithTLS acts like DialWithTLS but takes a timeout.
@@ -455,7 +471,11 @@ func DialTimeoutWithTLS(network, address string, tlsConfig *tls.Config, timeout 
 		network += "-tls"
 	}
 	client := Client{Net: network, Dialer: &net.Dialer{Timeout: timeout}, TLSConfig: tlsConfig}
-	return client.Dial(address)
+	conn, err = client.Dial(address)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 // ExchangeContext acts like Exchange, but honors the deadline on the provided

@@ -16,7 +16,6 @@ data:
          - "2"
        volumeMode: Filesystem
        fsType: ext4
-       namePattern: "*"
 ---
 apiVersion: apps/v1
 kind: DaemonSet

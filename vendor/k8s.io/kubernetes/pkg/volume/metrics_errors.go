@@ -35,16 +35,7 @@ func NewNotSupportedError() *MetricsError {
 	}
 }
 
-// NewNotSupportedErrorWithDriverName creates a new MetricsError with code NotSupported.
-// driver name is added to the error message.
-func NewNotSupportedErrorWithDriverName(name string) *MetricsError {
-	return &MetricsError{
-		Code: ErrCodeNotSupported,
-		Msg:  fmt.Sprintf("metrics are not supported for %s volumes", name),
-	}
-}
-
-// NewNoPathDefinedError creates a new MetricsError with code NoPathDefined.
+// NewNoPathDefined creates a new MetricsError with code NoPathDefined.
 func NewNoPathDefinedError() *MetricsError {
 	return &MetricsError{
 		Code: ErrCodeNoPathDefined,
@@ -56,7 +47,7 @@ func NewNoPathDefinedError() *MetricsError {
 func NewFsInfoFailedError(err error) *MetricsError {
 	return &MetricsError{
 		Code: ErrCodeFsInfoFailed,
-		Msg:  fmt.Sprintf("failed to get FsInfo due to error %v", err),
+		Msg:  fmt.Sprintf("Failed to get FsInfo due to error %v", err),
 	}
 }
 
@@ -67,7 +58,7 @@ type MetricsError struct {
 }
 
 func (e *MetricsError) Error() string {
-	return e.Msg
+	return fmt.Sprintf("%s", e.Msg)
 }
 
 // IsNotSupported returns true if and only if err is "key" not found error.

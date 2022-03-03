@@ -21,5 +21,4 @@ set -o pipefail
 ROOT=$(unset CDPATH && cd $(dirname "${BASH_SOURCE[0]}")/.. && pwd)
 cd $ROOT
 
-hack/verify_boilerplate.py --rootdir "$ROOT" \
-    --boilerplate-dir hack/boilerplate
+vendor/k8s.io/repo-infra/verify/verify-boilerplate.sh --rootdir "$ROOT"

@@ -632,8 +632,6 @@ type Cluster struct {
 	// an
 	// auto-generated name. Do not use this and a node_pool at the same
 	// time.
-	//
-	// This field is deprecated, use node_pool.initial_node_count instead.
 	InitialNodeCount int64 `json:"initialNodeCount,omitempty"`
 
 	// InstanceGroupUrls: Deprecated. Use node_pools.instance_group_urls.
@@ -727,6 +725,7 @@ type Cluster struct {
 	NetworkPolicy *NetworkPolicy `json:"networkPolicy,omitempty"`
 
 	// NodeConfig: Parameters used in creating the cluster's nodes.
+	// See `nodeConfig` for the description of its properties.
 	// For requests, this field should only be used in lieu of a
 	// "node_pool" object, since this configuration (along with
 	// the
@@ -736,21 +735,16 @@ type Cluster struct {
 	// time.
 	// For responses, this field will be populated with the node
 	// configuration of
-	// the first node pool. (For configuration of each node pool,
-	// see
-	// `node_pool.config`)
+	// the first node pool.
 	//
 	// If unspecified, the defaults are used.
-	// This field is deprecated, use node_pool.config instead.
 	NodeConfig *NodeConfig `json:"nodeConfig,omitempty"`
 
 	// NodeIpv4CidrSize: [Output only] The size of the address space on each
 	// node for hosting
 	// containers. This is provisioned from within the
 	// `container_ipv4_cidr`
-	// range. This field will only be set when cluster is in route-based
-	// network
-	// mode.
+	// range.
 	NodeIpv4CidrSize int64 `json:"nodeIpv4CidrSize,omitempty"`
 
 	// NodePools: The node pools associated with this cluster.
@@ -1140,7 +1134,7 @@ type DailyMaintenanceWindow struct {
 	// maintenance operations.
 	// Time format should be in
 	// [RFC3339](https://www.ietf.org/rfc/rfc3339.txt)
-	// format "HH:MM", where HH : [00-23] and MM : [00-59] GMT.
+	// format "HH:MM”, where HH : [00-23] and MM : [00-59] GMT.
 	StartTime string `json:"startTime,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Duration") to
@@ -1223,26 +1217,25 @@ func (s *GetJSONWebKeysResponse) MarshalJSON() ([]byte, error) {
 // document for the cluster.
 // See the OpenID Connect Discovery 1.0 specification for details.
 type GetOpenIDConfigResponse struct {
-	// ClaimsSupported: Supported claims.
+	// ClaimsSupported: NOLINT
 	ClaimsSupported []string `json:"claims_supported,omitempty"`
 
-	// GrantTypes: Supported grant types.
+	// GrantTypes: NOLINT
 	GrantTypes []string `json:"grant_types,omitempty"`
 
-	// IdTokenSigningAlgValuesSupported: supported ID Token signing
-	// Algorithms.
+	// IdTokenSigningAlgValuesSupported: NOLINT
 	IdTokenSigningAlgValuesSupported []string `json:"id_token_signing_alg_values_supported,omitempty"`
 
-	// Issuer: OIDC Issuer.
+	// Issuer: NOLINT
 	Issuer string `json:"issuer,omitempty"`
 
-	// JwksUri: JSON Web Key uri.
+	// JwksUri: NOLINT
 	JwksUri string `json:"jwks_uri,omitempty"`
 
-	// ResponseTypesSupported: Supported response types.
+	// ResponseTypesSupported: NOLINT
 	ResponseTypesSupported []string `json:"response_types_supported,omitempty"`
 
-	// SubjectTypesSupported: Supported subject types.
+	// SubjectTypesSupported: NOLINT
 	SubjectTypesSupported []string `json:"subject_types_supported,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1514,31 +1507,33 @@ func (s *IPAllocationPolicy) MarshalJSON() ([]byte, error) {
 
 // Jwk: Jwk is a JSON Web Key as specified in RFC 7517
 type Jwk struct {
-	// Alg: Algorithm.
+	// Alg: NOLINT
 	Alg string `json:"alg,omitempty"`
 
-	// Crv: Used for ECDSA keys.
+	// Crv: NOLINT
 	Crv string `json:"crv,omitempty"`
 
-	// E: Used for RSA keys.
+	// E: NOLINT
 	E string `json:"e,omitempty"`
 
-	// Kid: Key ID.
+	// Kid: NOLINT
 	Kid string `json:"kid,omitempty"`
 
-	// Kty: Key Type.
+	// Kty: NOLINT
 	Kty string `json:"kty,omitempty"`
 
-	// N: Used for RSA keys.
+	// N: Fields for RSA keys.
+	// NOLINT
 	N string `json:"n,omitempty"`
 
-	// Use: Permitted uses for the public keys.
+	// Use: NOLINT
 	Use string `json:"use,omitempty"`
 
-	// X: Used for ECDSA keys.
+	// X: Fields for ECDSA keys.
+	// NOLINT
 	X string `json:"x,omitempty"`
 
-	// Y: Used for ECDSA keys.
+	// Y: NOLINT
 	Y string `json:"y,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Alg") to
@@ -1924,7 +1919,7 @@ func (s *MasterAuth) MarshalJSON() ([]byte, error) {
 // blocks,
 // Google Compute Engine Public IPs and Google Prod IPs.
 type MasterAuthorizedNetworksConfig struct {
-	// CidrBlocks: cidr_blocks define up to 50 external networks that could
+	// CidrBlocks: cidr_blocks define up to 10 external networks that could
 	// access
 	// Kubernetes master through HTTPS.
 	CidrBlocks []*CidrBlock `json:"cidrBlocks,omitempty"`
@@ -2376,10 +2371,6 @@ type NodePool struct {
 
 	// Name: The name of the node pool.
 	Name string `json:"name,omitempty"`
-
-	// PodIpv4CidrSize: [Output only] The pod CIDR block size per node in
-	// this node pool.
-	PodIpv4CidrSize int64 `json:"podIpv4CidrSize,omitempty"`
 
 	// SelfLink: [Output only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
@@ -5110,7 +5101,10 @@ func (c *ProjectsLocationsClustersGetJwksCall) Do(opts ...googleapi.CallOption) 
 	//   "path": "v1/{+parent}/jwks",
 	//   "response": {
 	//     "$ref": "GetJSONWebKeysResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -8523,7 +8517,10 @@ func (c *ProjectsLocationsClustersWellKnownGetOpenidConfigurationCall) Do(opts .
 	//   "path": "v1/{+parent}/.well-known/openid-configuration",
 	//   "response": {
 	//     "$ref": "GetOpenIDConfigResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }

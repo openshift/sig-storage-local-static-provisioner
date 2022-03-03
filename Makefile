@@ -14,7 +14,7 @@
 
 REGISTRY ?= quay.io/external_storage
 VERSION ?= latest
-GOVERSION ?= 1.13.9
+GOVERSION ?= 1.11.1
 ARCH ?= amd64
 
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
@@ -82,7 +82,7 @@ test: provisioner
 .PHONY: test
 
 no-container-test:
-	go test ./cmd/... ./pkg/...
+	GO111MODULE=auto go test ./cmd/... ./pkg/...
 	# Remove bash tests until we figure out how to run them via ci-operator
 	# bash $(PWD)/deployment/docker/test.sh $(PWD)/deployment/docker/scripts
 .PHONY: no-container-test

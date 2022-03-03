@@ -22,12 +22,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/klog"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
-	"k8s.io/kubernetes/pkg/features"
 	priorityutil "k8s.io/kubernetes/pkg/scheduler/algorithm/priorities/util"
 )
 
@@ -53,14 +52,11 @@ type NodeInfo struct {
 	podsWithAffinity []*v1.Pod
 	usedPorts        HostPortInfo
 
-	// Total requested resources of all pods on this node. This includes assumed
-	// pods, which scheduler has sent for binding, but may not be scheduled yet.
+	// Total requested resource of all pods on this node.
+	// It includes assumed pods which scheduler sends binding to apiserver but
+	// didn't get it as scheduled yet.
 	requestedResource *Resource
-	// Total requested resources of all pods on this node with a minimum value
-	// applied to each container's CPU and memory requests. This does not reflect
-	// the actual resource requests for this node, but is used to avoid scheduling
-	// many zero-request pods onto one node.
-	nonzeroRequest *Resource
+	nonzeroRequest    *Resource
 	// We store allocatedResources (which is Node.Status.Allocatable.*) explicitly
 	// as int64, to avoid conversions and accessing map.
 	allocatableResource *Resource
@@ -357,6 +353,30 @@ func (n *NodeInfo) SetTaints(newTaints []v1.Taint) {
 	n.taints = newTaints
 }
 
+// MemoryPressureCondition returns the memory pressure condition status on this node.
+func (n *NodeInfo) MemoryPressureCondition() v1.ConditionStatus {
+	if n == nil {
+		return v1.ConditionUnknown
+	}
+	return n.memoryPressureCondition
+}
+
+// DiskPressureCondition returns the disk pressure condition status on this node.
+func (n *NodeInfo) DiskPressureCondition() v1.ConditionStatus {
+	if n == nil {
+		return v1.ConditionUnknown
+	}
+	return n.diskPressureCondition
+}
+
+// PIDPressureCondition returns the pid pressure condition status on this node.
+func (n *NodeInfo) PIDPressureCondition() v1.ConditionStatus {
+	if n == nil {
+		return v1.ConditionUnknown
+	}
+	return n.pidPressureCondition
+}
+
 // RequestedResource returns aggregated resource request of pods on this node.
 func (n *NodeInfo) RequestedResource() Resource {
 	if n == nil {
@@ -566,19 +586,6 @@ func calculateResource(pod *v1.Pod) (res Resource, non0CPU int64, non0Mem int64)
 		// No non-zero resources for GPUs or opaque resources.
 	}
 
-	// If Overhead is being utilized, add to the total requests for the pod
-	if pod.Spec.Overhead != nil && utilfeature.DefaultFeatureGate.Enabled(features.PodOverhead) {
-		resPtr.Add(pod.Spec.Overhead)
-
-		if _, found := pod.Spec.Overhead[v1.ResourceCPU]; found {
-			non0CPU += pod.Spec.Overhead.Cpu().MilliValue()
-		}
-
-		if _, found := pod.Spec.Overhead[v1.ResourceMemory]; found {
-			non0Mem += pod.Spec.Overhead.Memory().Value()
-		}
-	}
-
 	return
 }
 
@@ -658,10 +665,7 @@ func (n *NodeInfo) FilterOutPods(pods []*v1.Pod) []*v1.Pod {
 			continue
 		}
 		// If pod is on the given node, add it to 'filtered' only if it is present in nodeInfo.
-		podKey, err := GetPodKey(p)
-		if err != nil {
-			continue
-		}
+		podKey, _ := GetPodKey(p)
 		for _, np := range n.Pods() {
 			npodkey, _ := GetPodKey(np)
 			if npodkey == podKey {

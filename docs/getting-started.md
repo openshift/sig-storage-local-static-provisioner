@@ -13,8 +13,6 @@ on older versions, please see version links under
   * [Option 2: GKE](#option-2-gke)
   * [Option 3: Baremetal environments](#option-3-baremetal-environments)
   * [Option 4: Local test cluster](#option-4-local-test-cluster)
-  * [Option 5: EKS (experimental)](#option-5-eks-experimental)
-  * [Option 6: AKS](#option-6-aks)  
 - [Step 2: Creating a StorageClass (1.9+)](#step-2-creating-a-storageclass-19)
 - [Step 3: Creating local persistent volumes](#step-3-creating-local-persistent-volumes)
   * [Option 1: Using the local volume static provisioner](#option-1-using-the-local-volume-static-provisioner)
@@ -107,19 +105,6 @@ See [running Kubernetes
 locally](https://github.com/kubernetes/community/blob/master/contributors/devel/running-locally.md)
 for more information.
 
-#### Option 5: EKS (experimental)
-
-[eks-nvme-ssd-provisioner](https://github.com/brunsgaard/eks-nvme-ssd-provisioner)
-runs as a DaemonSet and will automatically format and mount the requested local
-NVMe SSDs. 
-
-**Note:** This project mounts disks in `/pv-disks/$uuid`. There is a
-working example of storage local static provisioner resources in the
-eks-nvme-ssd-provisioner repo.
-
-#### Option 6: AKS
-See [Local Persistent Volume support on Azure](https://github.com/Azure/kubernetes-volume-drivers/tree/master/local) for more information.
-
 ### Step 2: Creating a StorageClass (1.9+)
 
 To delay volume binding until pod scheduling and to handle multiple local PVs in
@@ -136,7 +121,7 @@ $ kubectl create -f deployment/kubernetes/example/default_example_storageclass.y
 
 1. Generate Provisioner's ServiceAccount, Roles, DaemonSet, and ConfigMap spec, and customize it.
 
-    This step uses helm templates to generate the specs.  See the [helm README](/helm/README.md) for setup instructions.
+    This step uses helm templates to generate the specs.  See the [helm README](helm) for setup instructions.
     To generate the provisioner's specs using the [default values](../helm/provisioner/values.yaml), run:
 
     ``` console

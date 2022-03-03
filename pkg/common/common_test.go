@@ -109,7 +109,6 @@ func TestLoadProvisionerConfigs(t *testing.T) {
      - "2"
    volumeMode: Filesystem
    fsType: ext4
-   namePattern: nvm*
 `,
 				"useAlphaAPI":     "true",
 				"minResyncPeriod": "1h30m",
@@ -122,7 +121,6 @@ func TestLoadProvisionerConfigs(t *testing.T) {
 						BlockCleanerCommand: []string{"/scripts/shred.sh", "2"},
 						VolumeMode:          "Filesystem",
 						FsType:              "ext4",
-						NamePattern:         "nvm*",
 					},
 				},
 				UseAlphaAPI: true,

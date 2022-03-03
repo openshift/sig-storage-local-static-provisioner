@@ -14,5 +14,6 @@ classes:
   # - "/scripts/blkdiscard.sh"
   volumeMode: Block
   storageClass: true
-serviceMonitor:
-  enabled: true
+prometheus:
+  operator:
+    enabled: true

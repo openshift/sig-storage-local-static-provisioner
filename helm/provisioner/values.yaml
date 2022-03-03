@@ -3,21 +3,17 @@
 #
 common:
   #
-  # Defines whether to generate rbac roles
+  # Defines whether to generate service account and role bindings.
   #
-  rbac:
-    # rbac.create: `true` if rbac resources should be created
-    create: true
-    # rbac.pspEnabled: `true` if PodSecurityPolicy resources should be created
-    pspEnabled: false
+  rbac: true
   #
-  # Defines whether to generate a serviceAccount
+  # Defines the namespace where provisioner runs
   #
-  serviceAccount:
-    # serviceAccount.create: Whether to create a service account or not
-    create: true
-    # serviceAccount.name: The name of the service account to create or use
-    name: ""
+  namespace: default
+  #
+  # Defines whether to create provisioner namespace
+  #
+  createNamespace: false
   #
   # Beta PV.NodeAffinity field is used by default. If running against pre-1.10
   # k8s version, the `useAlphaAPI` flag must be enabled in the configMap.
@@ -43,16 +39,13 @@ common:
   #
   #minResyncPeriod: 5m0s
   #
-  # Mount the host's `/dev/` by default so that block device symlinks can be
-  # resolved by the containers
+  # Defines the name of configmap used by Provisioner
   #
-  mountDevVolume: true
+  configMapName: "local-provisioner-config"
   #
-  # Map of label key-value pairs to apply to the PVs created by the
-  # provisioner. Uncomment to add labels to the list.
+  # Enables or disables Pod Security Policy creation and binding
   #
-  #labelsForPV:
-  #  pv-labels: can-be-selected
+  podSecurityPolicy: false
 #
 # Configure storage classes.
 #
@@ -72,8 +65,6 @@ classes:
   # and desire volume mode is Filesystem.
   # Must be a filesystem type supported by the host operating system.
   fsType: ext4
-  # File name pattern to discover. By default, discover all file names.
-  namePattern: "*"
   blockCleanerCommand:
   #  Do a quick reset of the block device during its cleanup.
   #  - "/scripts/quick_reset.sh"
@@ -91,26 +82,27 @@ classes:
   # storageClass:
     # reclaimPolicy: Delete # Available reclaim policies: Delete/Retain, defaults: Delete.
     # isDefaultClass: true # set as default class
+
 #
 # Configure DaemonSet for provisioner.
 #
 daemonset:
   #
-  # Defines annotations for each Pod in the DaemonSet.
+  # Defines the name of a Provisioner
   #
-  podAnnotations: {}
-  #
-  # Defines labels for each Pod in the DaemonSet.
-  #
-  podLabels: {}
+  name: "local-volume-provisioner"
   #
   # Defines Provisioner's image name including container registry.
   #
-  image: k8s.gcr.io/sig-storage/local-volume-provisioner:v2.4.0
+  image: quay.io/external_storage/local-volume-provisioner:v2.3.4
   #
   # Defines Image download policy, see kubernetes documentation for available values.
   #
   #imagePullPolicy: Always
+  #
+  # Defines a name of the service account which Provisioner will use to communicate with API server.
+  #
+  serviceAccount: local-storage-admin
   #
   # Defines a name of the Pod Priority Class to use with the Provisioner DaemonSet
   #
@@ -140,45 +132,26 @@ daemonset:
   # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   #
-  # If configured, affinity will add a affinity filed to the DeamonSet PodSpec.
-  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
-  affinity: {}
-  #
   # If configured, resources will set the requests/limits field to the Daemonset PodSpec.
   # Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
   resources: {}
-    # limits:
-    #   memory: "512Mi"
-    #   cpu: "1000m"
-    # requests:
-    #   memory: "32Mi"
-    #   cpu: "10m"
-  #
-  # If set to false, containers created by the Provisioner Daemonset will run without extra privileges.
-  privileged: true
 #
 # Configure Prometheus monitoring
 #
-serviceMonitor:
-  enabled: false
-  ## Interval at which Prometheus scrapes the provisioner
-  interval: 10s
-  # Namespace Prometheus is installed in defaults to release namespace
-  namespace:
-  ## Defaults to whats used if you follow CoreOS [Prometheus Install Instructions](https://github.com/coreos/prometheus-operator/tree/master/helm#tldr)
-  ## [Prometheus Selector Label](https://github.com/coreos/prometheus-operator/blob/master/helm/prometheus/templates/prometheus.yaml#L65)
-  ## [Kube Prometheus Selector Label](https://github.com/coreos/prometheus-operator/blob/master/helm/kube-prometheus/values.yaml#L298)
-  additionalLabels: {}
-  relabelings: []
-  # - sourceLabels: [__meta_kubernetes_pod_node_name]
-  #   separator: ;
-  #   regex: ^(.*)$
-  #   targetLabel: nodename
-  #   replacement: $1
-  #   action: replace
+prometheus:
+  operator:
+    ## Are you using Prometheus Operator?
+    enabled: false
 
-#
-# Overrice the default chartname or releasename
-#
-nameOverride: ""
-fullnameOverride: ""
+    serviceMonitor:
+      ## Interval at which Prometheus scrapes the provisioner
+      interval: 10s
+
+      # Namespace Prometheus is installed in
+      namespace: monitoring
+
+      ## Defaults to whats used if you follow CoreOS [Prometheus Install Instructions](https://github.com/coreos/prometheus-operator/tree/master/helm#tldr)
+      ## [Prometheus Selector Label](https://github.com/coreos/prometheus-operator/blob/master/helm/prometheus/templates/prometheus.yaml#L65)
+      ## [Kube Prometheus Selector Label](https://github.com/coreos/prometheus-operator/blob/master/helm/kube-prometheus/values.yaml#L298)
+      selector:
+        prometheus: kube-prometheus

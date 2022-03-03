@@ -276,9 +276,35 @@ var standardFinalizers = sets.NewString(
 	metav1.FinalizerDeleteDependents,
 )
 
-// IsStandardFinalizerName checks if the input string is a standard finalizer name
 func IsStandardFinalizerName(str string) bool {
 	return standardFinalizers.Has(str)
+}
+
+// TODO: make method on LoadBalancerStatus?
+func LoadBalancerStatusEqual(l, r *core.LoadBalancerStatus) bool {
+	return ingressSliceEqual(l.Ingress, r.Ingress)
+}
+
+func ingressSliceEqual(lhs, rhs []core.LoadBalancerIngress) bool {
+	if len(lhs) != len(rhs) {
+		return false
+	}
+	for i := range lhs {
+		if !ingressEqual(&lhs[i], &rhs[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func ingressEqual(lhs, rhs *core.LoadBalancerIngress) bool {
+	if lhs.IP != rhs.IP {
+		return false
+	}
+	if lhs.Hostname != rhs.Hostname {
+		return false
+	}
+	return true
 }
 
 // GetAccessModesAsString returns a string representation of an array of access modes.
@@ -298,7 +324,7 @@ func GetAccessModesAsString(modes []core.PersistentVolumeAccessMode) string {
 	return strings.Join(modesStr, ",")
 }
 
-// GetAccessModesFromString returns an array of AccessModes from a string created by GetAccessModesAsString
+// GetAccessModesAsString returns an array of AccessModes from a string created by GetAccessModesAsString
 func GetAccessModesFromString(modes string) []core.PersistentVolumeAccessMode {
 	strmodes := strings.Split(modes, ",")
 	accessModes := []core.PersistentVolumeAccessMode{}

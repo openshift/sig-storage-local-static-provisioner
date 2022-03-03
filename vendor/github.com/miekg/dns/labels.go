@@ -16,7 +16,7 @@ func SplitDomainName(s string) (labels []string) {
 	fqdnEnd := 0 // offset of the final '.' or the length of the name
 	idx := Split(s)
 	begin := 0
-	if IsFqdn(s) {
+	if s[len(s)-1] == '.' {
 		fqdnEnd = len(s) - 1
 	} else {
 		fqdnEnd = len(s)
@@ -36,7 +36,8 @@ func SplitDomainName(s string) (labels []string) {
 		}
 	}
 
-	return append(labels, s[begin:fqdnEnd])
+	labels = append(labels, s[begin:fqdnEnd])
+	return labels
 }
 
 // CompareDomainName compares the names s1 and s2 and

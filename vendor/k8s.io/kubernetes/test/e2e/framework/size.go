@@ -21,7 +21,11 @@ import (
 	"time"
 )
 
-// ResizeGroup resizes an instance group
+const (
+	resizeNodeReadyTimeout    = 2 * time.Minute
+	resizeNodeNotReadyTimeout = 2 * time.Minute
+)
+
 func ResizeGroup(group string, size int32) error {
 	if TestContext.ReportDir != "" {
 		CoreDump(TestContext.ReportDir)
@@ -30,17 +34,14 @@ func ResizeGroup(group string, size int32) error {
 	return TestContext.CloudConfig.Provider.ResizeGroup(group, size)
 }
 
-// GetGroupNodes returns a node name for the specified node group
 func GetGroupNodes(group string) ([]string, error) {
 	return TestContext.CloudConfig.Provider.GetGroupNodes(group)
 }
 
-// GroupSize returns the size of an instance group
 func GroupSize(group string) (int, error) {
 	return TestContext.CloudConfig.Provider.GroupSize(group)
 }
 
-// WaitForGroupSize waits for node instance group reached the desired size
 func WaitForGroupSize(group string, size int32) error {
 	timeout := 30 * time.Minute
 	for start := time.Now(); time.Since(start) < timeout; time.Sleep(20 * time.Second) {

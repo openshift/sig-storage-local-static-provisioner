@@ -22,14 +22,12 @@ import (
 	"sync"
 )
 
-// FlakeReport is a struct for managing the flake report.
 type FlakeReport struct {
 	lock       sync.RWMutex
 	Flakes     []string `json:"flakes"`
 	FlakeCount int      `json:"flakeCount"`
 }
 
-// NewFlakeReport returns a new flake report.
 func NewFlakeReport() *FlakeReport {
 	return &FlakeReport{
 		Flakes: []string{},
@@ -64,14 +62,12 @@ func (f *FlakeReport) RecordFlakeIfError(err error, optionalDescription ...inter
 	f.FlakeCount++
 }
 
-// GetFlakeCount returns the flake count.
 func (f *FlakeReport) GetFlakeCount() int {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	return f.FlakeCount
 }
 
-// PrintHumanReadable returns string of flake report.
 func (f *FlakeReport) PrintHumanReadable() string {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
@@ -84,14 +80,12 @@ func (f *FlakeReport) PrintHumanReadable() string {
 	return buf.String()
 }
 
-// PrintJSON returns the summary of frake report with JSON format.
 func (f *FlakeReport) PrintJSON() string {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	return PrettyPrintJSON(f)
 }
 
-// SummaryKind returns the summary of flake report.
 func (f *FlakeReport) SummaryKind() string {
 	return "FlakeReport"
 }
