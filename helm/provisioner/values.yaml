@@ -48,6 +48,13 @@ common:
   #
   mountDevVolume: true
   #
+  # A mapping of additional HostPath volume names to host paths to create, for
+  # your init container to consume
+  #
+  additionalHostPathVolumes: {}
+  #  provisioner-proc: /proc
+  #  provisioner-mnt: /mnt
+  #
   # Map of label key-value pairs to apply to the PVs created by the
   # provisioner. Uncomment to add labels to the list.
   #
@@ -81,8 +88,8 @@ classes:
   #  - "/scripts/dd_zero.sh"
   #  - "2"
   # or run shred utility for 2 iteration.s
-     - "/scripts/shred.sh"
-     - "2"
+    - "/scripts/shred.sh"
+    - "2"
   # or blkdiscard utility by uncommenting the line below.
   #  - "/scripts/blkdiscard.sh"
   # Uncomment to create storage class object with default configuration.
@@ -156,6 +163,9 @@ daemonset:
   #
   # If set to false, containers created by the Provisioner Daemonset will run without extra privileges.
   privileged: true
+  # Any init containers can be configured here.
+  # Ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+  initContainers: []
 #
 # Configure Prometheus monitoring
 #

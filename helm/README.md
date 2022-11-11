@@ -14,7 +14,7 @@ local-volume-provisioner in your Kubernetes with `helm install` directly.
     * [Install with `helm install` directly](#install-with-helm-install-directly)
 - [helm version >= v3.0.0](#helm-version-gt-v3.0.0)
     * [Generate yaml files with `helm template` and install with `kubectl`](#generate-yaml-files-with-helm-template-and-install-with-kubectl1)
-    * [Install with `helm install` directly](#install-with-helm-install-directly1)
+    * [Install with `helm install` directly](#install-with-helm-install-directly-1)
 - [Configurations](#configurations)
 - [Examples](#examples)
 
@@ -30,7 +30,7 @@ Required helm version: >= 2.7.2+
 
 Our chart provides a variety of options to configure deployment, see [provisioner/values.yaml](./provisioner/values.yaml).
 
-And there are [a lot of examples](./helm) to help you get started quickly.
+And there are [a lot of examples](./examples) to help you get started quickly.
 
 ## Install local-volume-provisioner
 
@@ -236,4 +236,5 @@ Here are a list of examples for various environments:
 * [examples/gce-retain.yaml](examples/gce-retain.yaml)
 * [examples/gce.yaml](examples/gce.yaml)
 * [examples/gke.yaml](examples/gke.yaml)
+* [examples/eks-nvme-ssd.yaml](example/eks-nvme-ssd.yaml)
 * [more...](examples/)
