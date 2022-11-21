@@ -271,24 +271,36 @@ func (d *Discoverer) discoverVolumesAtPath(class string, config common.MountConf
 	}
 	// Put mount points into set for faster checks below
 	type empty struct{}
-	mountPointMap := make(map[string]empty)
+	mountPointMap := make(map[string]interface{})
 	for _, mp := range mountPoints {
 		mountPointMap[mp.Path] = empty{}
+	}
+
+	var namePatterns []string
+	if config.NamePattern != "" {
+		namePatterns = strings.Split(config.NamePattern, ",")
 	}
 
 	var discoErrors []error
 	var totalCapacityBlockBytes, totalCapacityFSBytes int64
 	for _, file := range files {
-		if config.NamePattern != "" {
-			matched, err := filepath.Match(config.NamePattern, file)
-			if err != nil {
-				return err
-			}
-			if !matched {
-				klog.V(5).Infof("file(%s) under(%s) does not match pattern(%s)", file, config.MountDir, config.NamePattern)
-				continue
+		var matched bool
+		for _, pattern := range namePatterns {
+			if pattern != "" {
+				matched, err = filepath.Match(pattern, file)
+				if err != nil {
+					return err
+				}
+				if matched {
+					break
+				}
 			}
 		}
+		if config.NamePattern != "" && !matched {
+			klog.V(5).Infof("file(%s) under(%s) does not match pattern(%s)", file, config.MountDir, config.NamePattern)
+			continue
+		}
+
 		startTime := time.Now()
 		filePath := filepath.Join(config.MountDir, file)
 		volMode, err := common.GetVolumeMode(d.VolUtil, filePath)
@@ -360,16 +372,22 @@ func (d *Discoverer) discoverVolumesAtPath(class string, config common.MountConf
 				discoErrors = append(discoErrors, fmt.Errorf("path %q of filesystem mode cannot be used to create block volume", filePath))
 				continue
 			}
-			// Validate that this path is an actual mountpoint
-			if _, isMntPnt := mountPointMap[filePath]; isMntPnt == false {
-				discoErrors = append(discoErrors, fmt.Errorf("path %q is not an actual mountpoint", filePath))
+
+			// check if the file in the discovery directory is a mount point:
+			// - Windows: it should be a symlink pointing to a path that exists
+			// - Linux: it should exist in the /proc/mounts file
+			isLikelyMountPoint, err := d.VolUtil.IsLikelyMountPoint(outsidePath, filePath, mountPointMap)
+			if !isLikelyMountPoint || err != nil {
+				discoErrors = append(discoErrors, fmt.Errorf("path %q is not a valid mount point: %v", filePath, err))
 				continue
 			}
-			capacityByte, err = d.VolUtil.GetFsCapacityByte(filePath)
+
+			capacityByte, err = d.VolUtil.GetFsCapacityByte(outsidePath, filePath)
 			if err != nil {
 				discoErrors = append(discoErrors, fmt.Errorf("path %q fs stats error: %v", filePath, err))
 				continue
 			}
+
 			totalCapacityFSBytes += capacityByte
 		default:
 			discoErrors = append(discoErrors, fmt.Errorf("path %q has unexpected volume type %q", filePath, volMode))

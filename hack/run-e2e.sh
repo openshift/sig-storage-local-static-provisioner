@@ -80,8 +80,8 @@ fi
 
 # build image if not specified
 if [ -z "$PROVISIONER_E2E_IMAGE" ]; then
-    make provisioner
-    PROVISIONER_E2E_IMAGE=" k8s.gcr.io/sig-storage/local-volume-provisioner-amd64:latest"
+    make
+    PROVISIONER_E2E_IMAGE=" registry.k8s.io/sig-storage/local-volume-provisioner:latest_linux_amd64"
 else
     docker pull $PROVISIONER_E2E_IMAGE
 fi
@@ -114,7 +114,7 @@ elif [ "$KUBERNETES_CONFORMANCE_PROVIDER" == "kind" ]; then
     kind load docker-image --name=kind-kubetest $PROVISIONER_IMAGE_NAME
     PROVISIONER_IMAGE_PULL_POLICY=Never
     # install sudo
-    # FIXME: remove when we upgrade Kuberenetes code to 1.16+, see https://github.com/kubernetes/kubernetes/pull/80329.
+    # FIXME: remove when we upgrade Kubernetes code to 1.16+, see https://github.com/kubernetes/kubernetes/pull/80329.
     for n in $(kind get nodes --name=kind-kubetest); do
         docker exec $n sh -c 'apt-get update && apt-get install -y sudo'
     done
